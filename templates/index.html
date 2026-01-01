@@ -15,11 +15,30 @@
             <div>
               <h3>{{ book.title }}</h3>
               <p class="muted">{{ book.author or 'Unknown author' }}</p>
+              {% set percent = (book.current_page / book.total_pages * 100) if book.total_pages else 0 %}
+              <div class="progress">
+                <div class="progress-fill" style="width: {{ percent }}%"></div>
+              </div>
+              <p class="muted">Progress: {{ book.current_page }} / {{ book.total_pages }} ({{ percent|round(0) }}%)</p>
             </div>
             <div class="book-meta">
-              <p>Progress: {{ book.current_page }} / {{ book.total_pages }}</p>
               <p>Status: {{ book.status }}</p>
               <p>Pages/day: {{ book.pages_per_day }}</p>
+              <div class="book-actions">
+                {% if book.status == 'active' %}
+                  <form method="post" action="{{ url_for('book_status', book_id=book.id) }}">
+                    <input type="hidden" name="status" value="paused" />
+                    <button type="submit">Pause</button>
+                  </form>
+                {% elif book.status == 'paused' %}
+                  <form method="post" action="{{ url_for('book_status', book_id=book.id) }}">
+                    <input type="hidden" name="status" value="active" />
+                    <button type="submit">Resume</button>
+                  </form>
+                {% else %}
+                  <span class="muted">Completed</span>
+                {% endif %}
+              </div>
               <a href="{{ url_for('book_detail', book_id=book.id) }}">View</a>
             </div>
           </div>
