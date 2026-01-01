@@ -2,6 +2,7 @@ import os
 import sqlite3
 
 from config import Config
+from migrations import migrate
 
 
 def get_connection():
@@ -12,6 +13,7 @@ def get_connection():
 
 
 def init_db():
+    migrate()
     db_dir = os.path.dirname(Config.DATABASE_PATH)
     if db_dir:
         os.makedirs(db_dir, exist_ok=True)
