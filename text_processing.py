@@ -96,5 +96,8 @@ def extract_text(file_path, file_type):
         for page in reader.pages:
             page_text = page.extract_text() or ""
             pages.append(page_text)
-        return "\n".join(pages)
+        text = "\n".join(pages)
+        if not text.strip():
+            raise ValueError("No text could be extracted from this PDF.")
+        return text
     raise ValueError(f"Unsupported file type: {file_type}")

@@ -69,6 +69,15 @@ def create_app():
             return render_template("upload.html", message=str(exc))
 
         total_words = count_words(text)
+        if total_words == 0:
+            try:
+                os.remove(file_path)
+            except OSError:
+                pass
+            return render_template(
+                "upload.html",
+                message="No readable text found in the file.",
+            )
         total_pages = max(1, math.ceil(total_words / app.config["WORDS_PER_PAGE"]))
 
         title = request.form.get("title") or os.path.splitext(filename)[0]
