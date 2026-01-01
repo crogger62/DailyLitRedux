@@ -5,7 +5,7 @@ from email.message import EmailMessage
 import smtplib
 
 from config import Config
-from db import get_active_books, insert_history, set_book_status, update_progress
+from db import get_active_books, get_settings, insert_history, set_book_status, update_progress
 from text_processing import chunk_text_with_word_ranges, extract_text
 
 
@@ -44,14 +44,14 @@ def build_email(book, day, total_pages, content, start_page, end_page, percent):
     return subject, plain, html
 
 
-def send_email(subject, plain, html):
+def send_email(subject, plain, html, recipient):
     if not Config.EMAIL_PASSWORD:
         raise RuntimeError("Missing GMAIL_APP_PASSWORD.")
 
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = Config.EMAIL_ADDRESS
-    msg["To"] = Config.EMAIL_ADDRESS
+    msg["To"] = recipient
     msg.set_content(plain)
     msg.add_alternative(html, subtype="html")
 
@@ -62,6 +62,8 @@ def send_email(subject, plain, html):
 
 
 def process_book(book, force=False):
+    settings = get_settings()
+    recipient = settings.get("email_address") or Config.EMAIL_ADDRESS
     today = date.today().isoformat()
     if book["status"] != "active":
         return False, "Book is not active."
@@ -110,7 +112,7 @@ def process_book(book, force=False):
     last_error = None
     for _ in range(3):
         try:
-            send_email(subject, plain, html)
+            send_email(subject, plain, html, recipient)
             success = True
             break
         except Exception as exc:

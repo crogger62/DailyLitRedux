@@ -27,10 +27,30 @@
       <div>
         <h3>Email address</h3>
         <p class="muted">{{ settings.email_address or 'crog62@gmail.com' }}</p>
+        <form method="post" action="{{ url_for('settings_email') }}">
+          <label for="email-address">Update email</label>
+          <input
+            id="email-address"
+            name="email_address"
+            type="email"
+            value="{{ settings.email_address or 'crog62@gmail.com' }}"
+          />
+          <button type="submit">Save</button>
+        </form>
       </div>
       <div>
         <h3>Send time</h3>
         <p class="muted">{{ settings.send_time or '02:00' }}</p>
+        <form method="post" action="{{ url_for('settings_time') }}">
+          <label for="send-time">Update send time</label>
+          <input
+            id="send-time"
+            name="send_time"
+            type="time"
+            value="{{ settings.send_time or '02:00' }}"
+          />
+          <button type="submit">Save</button>
+        </form>
       </div>
     </div>
     <form method="post" action="{{ url_for('settings_test_email') }}">

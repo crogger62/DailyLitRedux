@@ -124,8 +124,32 @@ def create_app():
         flash("Default pages per day updated.", "success")
         return redirect(url_for("settings"))
 
+    @app.route("/settings/email", methods=["POST"])
+    def settings_email():
+        value = request.form.get("email_address", "").strip()
+        if not value:
+            flash("Email address cannot be empty.", "error")
+            return redirect(url_for("settings"))
+
+        set_setting("email_address", value)
+        flash("Email address updated.", "success")
+        return redirect(url_for("settings"))
+
+    @app.route("/settings/time", methods=["POST"])
+    def settings_time():
+        value = request.form.get("send_time", "").strip()
+        if not value:
+            flash("Send time cannot be empty.", "error")
+            return redirect(url_for("settings"))
+
+        set_setting("send_time", value)
+        flash("Send time updated.", "success")
+        return redirect(url_for("settings"))
+
     @app.route("/settings/test", methods=["POST"])
     def settings_test_email():
+        settings_data = get_settings()
+        recipient = settings_data.get("email_address") or app.config["EMAIL_ADDRESS"]
         if not app.config["EMAIL_PASSWORD"]:
             flash("Missing GMAIL_APP_PASSWORD.", "error")
             return redirect(url_for("settings"))
@@ -133,7 +157,7 @@ def create_app():
         msg = EmailMessage()
         msg["Subject"] = "[DailyLit] Test Email"
         msg["From"] = app.config["EMAIL_ADDRESS"]
-        msg["To"] = app.config["EMAIL_ADDRESS"]
+        msg["To"] = recipient
         msg.set_content("This is a test email from DailyLit Redux.")
 
         try:
