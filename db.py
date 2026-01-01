@@ -345,5 +345,21 @@ def get_settings():
     finally:
         conn.close()
 
+
+def set_setting(key, value):
+    conn = get_connection()
+    try:
+        conn.execute(
+            """
+            INSERT INTO settings (key, value)
+            VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value;
+            """,
+            (key, value),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
     init_db()

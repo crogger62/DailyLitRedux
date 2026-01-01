@@ -16,10 +16,12 @@ from db import (
     init_db,
     insert_book,
     insert_progress,
+    set_setting,
     set_book_status,
     update_pages_per_day,
 )
 from text_processing import count_words, extract_text
+from scheduler import process_book
 
 
 def create_app():
@@ -70,7 +72,13 @@ def create_app():
 
         title = request.form.get("title") or os.path.splitext(filename)[0]
         author = request.form.get("author") or None
-        pages_per_day = request.form.get("pages_per_day") or app.config["DEFAULT_PAGES_PER_DAY"]
+        pages_per_day = request.form.get("pages_per_day")
+        if not pages_per_day:
+            settings_data = get_settings()
+            pages_per_day = settings_data.get(
+                "default_pages_per_day",
+                app.config["DEFAULT_PAGES_PER_DAY"],
+            )
         try:
             pages_per_day = max(1, int(pages_per_day))
         except ValueError:
@@ -102,6 +110,19 @@ def create_app():
     def settings():
         settings_data = get_settings()
         return render_template("settings.html", settings=settings_data)
+
+    @app.route("/settings/default", methods=["POST"])
+    def settings_default():
+        value = request.form.get("default_pages_per_day", "").strip()
+        try:
+            value_int = max(1, int(value))
+        except ValueError:
+            flash("Default pages per day must be a positive number.", "error")
+            return redirect(url_for("settings"))
+
+        set_setting("default_pages_per_day", str(value_int))
+        flash("Default pages per day updated.", "success")
+        return redirect(url_for("settings"))
 
     @app.route("/settings/test", methods=["POST"])
     def settings_test_email():
@@ -173,6 +194,17 @@ def create_app():
                 pass
         flash("Book deleted.", "success")
         return redirect(url_for("index"))
+
+    @app.route("/book/<int:book_id>/send", methods=["POST"])
+    def book_send_now(book_id):
+        book = get_book_detail(book_id)
+        if not book:
+            flash("Book not found.", "error")
+            return redirect(url_for("index"))
+
+        ok, message = process_book(book)
+        flash(message, "success" if ok else "error")
+        return redirect(url_for("book_detail", book_id=book_id))
 
     return app
 

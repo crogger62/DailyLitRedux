@@ -12,6 +12,17 @@
       <div>
         <h3>Default pages per day</h3>
         <p class="muted">{{ settings.default_pages_per_day or '1' }}</p>
+        <form method="post" action="{{ url_for('settings_default') }}">
+          <label for="default-pages">Update default</label>
+          <input
+            id="default-pages"
+            name="default_pages_per_day"
+            type="number"
+            min="1"
+            value="{{ settings.default_pages_per_day or '1' }}"
+          />
+          <button type="submit">Save</button>
+        </form>
       </div>
       <div>
         <h3>Email address</h3>

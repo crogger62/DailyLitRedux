@@ -61,72 +61,79 @@ def send_email(subject, plain, html):
         smtp.send_message(msg)
 
 
-def process_books():
+def process_book(book, force=False):
     today = date.today().isoformat()
+    if book["status"] != "active":
+        return False, "Book is not active."
+    if book["last_sent_date"] == today and not force:
+        return False, "Already sent today."
+
+    try:
+        text = extract_text(book["file_path"], book["file_type"])
+        chunks = chunk_text_with_word_ranges(text, Config.WORDS_PER_PAGE)
+    except Exception as exc:
+        log_message(f"Book {book['id']} failed to load: {exc}")
+        return False, "Failed to read book content."
+
+    if not chunks:
+        log_message(f"Book {book['id']} has no content.")
+        return False, "No content to send."
+
+    start_page = book["current_page"] + 1
+    if start_page > book["total_pages"]:
+        set_book_status(book["id"], "completed")
+        update_progress(book["id"], book["current_page"], book["current_word_position"], today, today)
+        log_message(f"Book {book['id']} marked completed (already finished).")
+        return True, "Book already completed."
+
+    end_page = min(book["current_page"] + book["pages_per_day"], book["total_pages"])
+    selection = chunks[book["current_page"] : end_page]
+    if not selection:
+        log_message(f"Book {book['id']} has no chunk selection.")
+        return False, "Unable to select next chunk."
+
+    content = "\n\n".join(chunk for chunk, _, _ in selection)
+    word_start = selection[0][1]
+    word_end = selection[-1][2]
+    percent = round((end_page / book["total_pages"]) * 100)
+    subject, plain, html = build_email(
+        book,
+        day=end_page,
+        total_pages=book["total_pages"],
+        content=content,
+        start_page=start_page,
+        end_page=end_page,
+        percent=percent,
+    )
+
+    success = False
+    last_error = None
+    for _ in range(3):
+        try:
+            send_email(subject, plain, html)
+            success = True
+            break
+        except Exception as exc:
+            last_error = exc
+            time_module.sleep(300)
+
+    if not success:
+        log_message(f"Book {book['id']} email failed: {last_error}")
+        return False, "Email send failed."
+
+    completed_date = today if end_page >= book["total_pages"] else None
+    update_progress(book["id"], end_page, word_end, today, completed_date)
+    insert_history(book["id"], today, start_page, end_page, word_start, word_end)
+    if completed_date:
+        set_book_status(book["id"], "completed")
+    log_message(f"Book {book['id']} sent pages {start_page}-{end_page}.")
+    return True, f"Sent pages {start_page}-{end_page}."
+
+
+def process_books():
     books = get_active_books()
     for book in books:
-        if book["last_sent_date"] == today:
-            continue
-
-        try:
-            text = extract_text(book["file_path"], book["file_type"])
-            chunks = chunk_text_with_word_ranges(text, Config.WORDS_PER_PAGE)
-        except Exception as exc:
-            log_message(f"Book {book['id']} failed to load: {exc}")
-            continue
-
-        if not chunks:
-            log_message(f"Book {book['id']} has no content.")
-            continue
-
-        start_page = book["current_page"] + 1
-        if start_page > book["total_pages"]:
-            set_book_status(book["id"], "completed")
-            update_progress(book["id"], book["current_page"], book["current_word_position"], today, today)
-            log_message(f"Book {book['id']} marked completed (already finished).")
-            continue
-
-        end_page = min(book["current_page"] + book["pages_per_day"], book["total_pages"])
-        selection = chunks[book["current_page"] : end_page]
-        if not selection:
-            log_message(f"Book {book['id']} has no chunk selection.")
-            continue
-
-        content = "\n\n".join(chunk for chunk, _, _ in selection)
-        word_start = selection[0][1]
-        word_end = selection[-1][2]
-        percent = round((end_page / book["total_pages"]) * 100)
-        subject, plain, html = build_email(
-            book,
-            day=end_page,
-            total_pages=book["total_pages"],
-            content=content,
-            start_page=start_page,
-            end_page=end_page,
-            percent=percent,
-        )
-
-        success = False
-        last_error = None
-        for _ in range(3):
-            try:
-                send_email(subject, plain, html)
-                success = True
-                break
-            except Exception as exc:
-                last_error = exc
-                time_module.sleep(300)
-
-        if not success:
-            log_message(f"Book {book['id']} email failed: {last_error}")
-            continue
-
-        completed_date = today if end_page >= book["total_pages"] else None
-        update_progress(book["id"], end_page, word_end, today, completed_date)
-        insert_history(book["id"], today, start_page, end_page, word_start, word_end)
-        if completed_date:
-            set_book_status(book["id"], "completed")
-        log_message(f"Book {book['id']} sent pages {start_page}-{end_page}.")
+        process_book(book)
 
 
 if __name__ == "__main__":
