@@ -23,7 +23,7 @@ def _protect_abbreviations(text):
         escaped = re.escape(abbr)
         text = re.sub(
             escaped,
-            abbr.replace(".", "<DOT>"),
+            lambda match: match.group(0).replace(".", "<DOT>"),
             text,
             flags=re.IGNORECASE,
         )
