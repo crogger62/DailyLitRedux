@@ -1,0 +1,173 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  background: #f6f7fb;
+  color: #1f2933;
+}
+
+.container {
+  width: min(960px, 92%);
+  margin: 0 auto;
+  padding: 1.5rem 0;
+}
+
+.site-header {
+  background: #14213d;
+  color: #fff;
+}
+
+.site-title {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.site-nav {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.site-nav a {
+  color: #fca311;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.card {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(20, 33, 61, 0.08);
+}
+
+.muted {
+  color: #6b7280;
+}
+
+.notice {
+  margin: 0 0 1rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #e8f1ff;
+  color: #1e3a8a;
+}
+
+.notice.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.notice.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.flash-list {
+  margin-bottom: 1rem;
+}
+
+.details {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+input,
+button {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #cbd2d9;
+  font-size: 1rem;
+}
+
+select {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #cbd2d9;
+  font-size: 1rem;
+  background: #fff;
+}
+
+button {
+  background: #fca311;
+  color: #14213d;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:hover {
+  background: #f6ad2b;
+}
+
+.settings-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.book-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.book-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f9fafb;
+}
+
+.book-row h3 {
+  margin: 0 0 0.25rem 0;
+}
+
+.book-meta {
+  text-align: right;
+}
+
+.book-meta a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+}
+
+.history-table th,
+.history-table td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.history-table th {
+  background: #f1f5f9;
+}
+
+.actions {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0 1.5rem 0;
+}
+
+.danger {
+  background: #dc2626;
+  color: #fff;
+}

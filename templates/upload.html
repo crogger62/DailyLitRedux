@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}DailyLit Redux - Upload{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h2>Upload Book</h2>
+    {% if message %}
+      <p class="notice">{{ message }}</p>
+    {% endif %}
+    {% if details %}
+      <div class="details">
+        <p><strong>Title:</strong> {{ details.title }}</p>
+        <p><strong>Author:</strong> {{ details.author }}</p>
+        <p><strong>Total words:</strong> {{ details.total_words }}</p>
+        <p><strong>Total pages:</strong> {{ details.total_pages }}</p>
+      </div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+      <label for="book-file">Book File</label>
+      <input id="book-file" name="book_file" type="file" accept=".txt,.pdf" required />
+
+      <label for="title">Title</label>
+      <input id="title" name="title" type="text" placeholder="Book title" />
+
+      <label for="author">Author</label>
+      <input id="author" name="author" type="text" placeholder="Author (optional)" />
+
+      <label for="pages-per-day">Pages per day</label>
+      <input id="pages-per-day" name="pages_per_day" type="number" min="1" value="1" />
+
+      <button type="submit">Upload</button>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}DailyLit Redux - Dashboard{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h2>Books</h2>
+    {% if message %}
+      <p class="notice">{{ message }}</p>
+    {% endif %}
+    {% if books %}
+      <div class="book-list">
+        {% for book in books %}
+          <div class="book-row">
+            <div>
+              <h3>{{ book.title }}</h3>
+              <p class="muted">{{ book.author or 'Unknown author' }}</p>
+            </div>
+            <div class="book-meta">
+              <p>Progress: {{ book.current_page }} / {{ book.total_pages }}</p>
+              <p>Status: {{ book.status }}</p>
+              <p>Pages/day: {{ book.pages_per_day }}</p>
+              <a href="{{ url_for('book_detail', book_id=book.id) }}">View</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">No books yet. Upload a book to get started.</p>
+    {% endif %}
+  </section>
+{% endblock %}

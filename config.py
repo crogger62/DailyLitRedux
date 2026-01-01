@@ -3,6 +3,7 @@ from datetime import time
 
 
 class Config:
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
     # Database
     DATABASE_PATH = os.path.join("data", "books.db")
 

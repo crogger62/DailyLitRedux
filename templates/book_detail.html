@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}DailyLit Redux - Book{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h2>Book Detail</h2>
+    {% if message %}
+      <p class="notice">{{ message }}</p>
+    {% endif %}
+    {% if book %}
+      <div class="details">
+        <p><strong>Title:</strong> {{ book.title }}</p>
+        <p><strong>Author:</strong> {{ book.author or 'Unknown' }}</p>
+        <p><strong>Format:</strong> {{ book.file_type }}</p>
+        <p><strong>Status:</strong> {{ book.status }}</p>
+        <p><strong>Pages:</strong> {{ book.current_page }} / {{ book.total_pages }}</p>
+        <p><strong>Pages per day:</strong> {{ book.pages_per_day }}</p>
+        <p><strong>Last sent:</strong> {{ book.last_sent_date or 'Never' }}</p>
+      </div>
+      <div class="actions">
+        <form method="post" action="{{ url_for('book_status', book_id=book.id) }}">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="active" {% if book.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="paused" {% if book.status == 'paused' %}selected{% endif %}>Paused</option>
+            <option value="completed" {% if book.status == 'completed' %}selected{% endif %}>Completed</option>
+          </select>
+          <button type="submit">Update status</button>
+        </form>
+        <form method="post" action="{{ url_for('book_pages', book_id=book.id) }}">
+          <label for="pages-per-day">Pages per day</label>
+          <input id="pages-per-day" name="pages_per_day" type="number" min="1" value="{{ book.pages_per_day }}" />
+          <button type="submit">Update speed</button>
+        </form>
+        <form method="post" action="{{ url_for('book_delete', book_id=book.id) }}">
+          <button type="submit" class="danger">Delete book</button>
+        </form>
+      </div>
+      <h3>Reading History</h3>
+      {% if history %}
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Pages</th>
+              <th>Words</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in history %}
+              <tr>
+                <td>{{ row.sent_date }}</td>
+                <td>{{ row.start_page }}-{{ row.end_page }}</td>
+                <td>{{ row.word_start }}-{{ row.word_end }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="muted">No reading history yet.</p>
+      {% endif %}
+    {% else %}
+      <p class="muted">Book not found.</p>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}DailyLit Redux - Settings{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h2>Settings</h2>
+    {% if message %}
+      <p class="notice">{{ message }}</p>
+    {% endif %}
+    <div class="settings-grid">
+      <div>
+        <h3>Default pages per day</h3>
+        <p class="muted">{{ settings.default_pages_per_day or '1' }}</p>
+      </div>
+      <div>
+        <h3>Email address</h3>
+        <p class="muted">{{ settings.email_address or 'crog62@gmail.com' }}</p>
+      </div>
+      <div>
+        <h3>Send time</h3>
+        <p class="muted">{{ settings.send_time or '02:00' }}</p>
+      </div>
+    </div>
+    <form method="post" action="{{ url_for('settings_test_email') }}">
+      <button type="submit">Send test email</button>
+    </form>
+  </section>
+{% endblock %}
