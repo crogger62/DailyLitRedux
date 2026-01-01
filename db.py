@@ -291,6 +291,33 @@ def get_active_books():
         conn.close()
 
 
+def reset_progress(book_id):
+    conn = get_connection()
+    try:
+        conn.execute(
+            """
+            UPDATE reading_progress
+            SET current_page = 0,
+                current_word_position = 0,
+                last_sent_date = NULL,
+                completed_date = NULL
+            WHERE book_id = ?;
+            """,
+            (book_id,),
+        )
+        conn.execute(
+            "DELETE FROM reading_history WHERE book_id = ?;",
+            (book_id,),
+        )
+        conn.execute(
+            "UPDATE books SET status = 'active' WHERE id = ?;",
+            (book_id,),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def update_progress(book_id, current_page, current_word_position, last_sent_date, completed_date=None):
     conn = get_connection()
     try:

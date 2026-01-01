@@ -18,6 +18,7 @@ from db import (
     insert_progress,
     set_setting,
     set_book_status,
+    reset_progress,
     update_pages_per_day,
 )
 from text_processing import count_words, extract_text
@@ -228,6 +229,18 @@ def create_app():
 
         ok, message = process_book(book)
         flash(message, "success" if ok else "error")
+        return redirect(url_for("book_detail", book_id=book_id))
+
+    @app.route("/book/<int:book_id>/reset", methods=["POST"])
+    def book_reset(book_id):
+        reset_progress(book_id)
+        flash("Progress reset.", "success")
+        return redirect(url_for("book_detail", book_id=book_id))
+
+    @app.route("/book/<int:book_id>/complete", methods=["POST"])
+    def book_complete(book_id):
+        set_book_status(book_id, "completed")
+        flash("Book marked complete.", "success")
         return redirect(url_for("book_detail", book_id=book_id))
 
     return app

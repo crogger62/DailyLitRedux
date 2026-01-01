@@ -36,6 +36,12 @@
         <form method="post" action="{{ url_for('book_send_now', book_id=book.id) }}">
           <button type="submit">Send now</button>
         </form>
+        <form method="post" action="{{ url_for('book_reset', book_id=book.id) }}">
+          <button type="submit">Reset progress</button>
+        </form>
+        <form method="post" action="{{ url_for('book_complete', book_id=book.id) }}">
+          <button type="submit">Mark complete</button>
+        </form>
         <form method="post" action="{{ url_for('book_delete', book_id=book.id) }}">
           <button type="submit" class="danger">Delete book</button>
         </form>
