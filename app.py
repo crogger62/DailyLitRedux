@@ -18,6 +18,7 @@ from db import (
     insert_progress,
     set_setting,
     set_book_status,
+    mark_book_completed,
     reset_progress,
     update_pages_per_day,
 )
@@ -249,7 +250,7 @@ def create_app():
 
     @app.route("/book/<int:book_id>/complete", methods=["POST"])
     def book_complete(book_id):
-        set_book_status(book_id, "completed")
+        mark_book_completed(book_id)
         flash("Book marked complete.", "success")
         return redirect(url_for("book_detail", book_id=book_id))
 

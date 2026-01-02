@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from datetime import date
 
 from config import Config
 from migrations import migrate
@@ -187,6 +188,7 @@ def get_book_detail(book_id):
                 books.id,
                 books.title,
                 books.author,
+                books.file_path,
                 books.file_type,
                 books.total_words,
                 books.total_pages,
@@ -312,6 +314,23 @@ def reset_progress(book_id):
         conn.execute(
             "UPDATE books SET status = 'active' WHERE id = ?;",
             (book_id,),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def mark_book_completed(book_id, completed_date=None):
+    completed_date = completed_date or date.today().isoformat()
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE books SET status = 'completed' WHERE id = ?;",
+            (book_id,),
+        )
+        conn.execute(
+            "UPDATE reading_progress SET completed_date = ? WHERE book_id = ?;",
+            (completed_date, book_id),
         )
         conn.commit()
     finally:

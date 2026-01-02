@@ -36,7 +36,7 @@ def _restore_abbreviations(text):
 
 def split_sentences(text):
     protected = _protect_abbreviations(text)
-    parts = re.split(r"(?<=[.!?])\s+(?=[A-Z])", protected)
+    parts = re.split(r"(?<=[.!?])\s+(?=[A-Za-z])", protected)
     return [_restore_abbreviations(part.strip()) for part in parts if part.strip()]
 
 
