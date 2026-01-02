@@ -24,7 +24,7 @@ class Config:
     EMAIL_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 
     # Chunking
-    WORDS_PER_PAGE = 250
+    WORDS_PER_PAGE = 400
 
     # Scheduling
     SEND_TIME = time(2, 0)  # 2:00 AM
