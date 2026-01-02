@@ -24,6 +24,18 @@ $env:SECRET_KEY="change-me"
 ```
 Alternatively, create a `.env` file in the project root.
 
+## Gmail App Password (required for email sending)
+
+1. Enable 2-Step Verification on your Google account.
+2. Open the App Passwords page:
+   - https://myaccount.google.com/apppasswords
+3. Create a new app password (e.g., App: Mail, Device: DailyLit).
+4. Copy the 16-character password and set `GMAIL_APP_PASSWORD` in `.env`.
+
+Notes:
+- If you do not see “App passwords,” you may be using a Workspace account or Advanced Protection.
+- App passwords are only available when 2-Step Verification is enabled.
+
 3. Run the app:
 
 ```bash
