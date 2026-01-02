@@ -31,7 +31,7 @@
         <form method="post" action="{{ url_for('book_pages', book_id=book.id) }}">
           <label for="pages-per-day">Pages per day</label>
           <input id="pages-per-day" name="pages_per_day" type="number" min="1" value="{{ book.pages_per_day }}" />
-          <button type="submit">Update speed</button>
+          <button type="submit">Update pages per day</button>
         </form>
         <form method="post" action="{{ url_for('book_send_now', book_id=book.id) }}">
           <button type="submit">Send now</button>

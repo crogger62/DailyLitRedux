@@ -1,6 +1,6 @@
 import os
 import time as time_module
-from datetime import date
+from datetime import date, datetime
 from email.message import EmailMessage
 import smtplib
 
@@ -9,12 +9,14 @@ from db import get_active_books, get_settings, insert_history, set_book_status, 
 from text_processing import chunk_text_with_word_ranges, extract_text
 
 
-LOG_PATH = os.path.join("logs", "email_log.txt")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_PATH = os.path.join(BASE_DIR, "logs", "email_log.txt")
+DEBUG = os.getenv("DAILYLIT_DEBUG", "0").strip() == "1"
 
 
 def log_message(message):
     os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-    timestamp = date.today().isoformat()
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(LOG_PATH, "a", encoding="utf-8") as handle:
         handle.write(f"[{timestamp}] {message}\n")
 
@@ -55,9 +57,15 @@ def send_email(subject, plain, html, recipient):
     msg.set_content(plain)
     msg.add_alternative(html, subtype="html")
 
+    if DEBUG:
+        log_message(f"SMTP connect {Config.SMTP_SERVER}:{Config.SMTP_PORT} as {Config.EMAIL_ADDRESS}")
     with smtplib.SMTP(Config.SMTP_SERVER, Config.SMTP_PORT) as smtp:
         smtp.starttls()
+        if DEBUG:
+            log_message("SMTP STARTTLS ok")
         smtp.login(Config.EMAIL_ADDRESS, Config.EMAIL_PASSWORD)
+        if DEBUG:
+            log_message(f"SMTP login ok, sending to {recipient}")
         smtp.send_message(msg)
 
 
@@ -65,16 +73,34 @@ def process_book(book, force=False):
     settings = get_settings()
     recipient = settings.get("email_address") or Config.EMAIL_ADDRESS
     today = date.today().isoformat()
+    file_path = book["file_path"]
+    if not os.path.isabs(file_path):
+        file_path = os.path.join(BASE_DIR, file_path)
+    if DEBUG:
+        log_message(
+            f"Book {book['id']} status={book['status']} current_page={book['current_page']} "
+            f"pages_per_day={book['pages_per_day']} last_sent={book['last_sent_date']} recipient={recipient} "
+            f"cwd={os.getcwd()}"
+        )
     if book["status"] != "active":
         return False, "Book is not active."
     if book["last_sent_date"] == today and not force:
+        if DEBUG:
+            log_message(f"Book {book['id']} skipped (already sent today).")
         return False, "Already sent today."
 
     try:
-        text = extract_text(book["file_path"], book["file_type"])
+        if not os.path.exists(file_path):
+            log_message(f"Book {book['id']} missing file: {file_path}")
+            return False, "Book file not found."
+        if DEBUG:
+            log_message(f"Book {book['id']} loading {file_path}")
+        text = extract_text(file_path, book["file_type"])
         chunks = chunk_text_with_word_ranges(text, Config.WORDS_PER_PAGE)
     except Exception as exc:
         log_message(f"Book {book['id']} failed to load: {exc}")
+        if DEBUG:
+            return False, f"Failed to read book content: {exc}"
         return False, "Failed to read book content."
 
     if not chunks:
@@ -98,6 +124,11 @@ def process_book(book, force=False):
     word_start = selection[0][1]
     word_end = selection[-1][2]
     percent = round((end_page / book["total_pages"]) * 100)
+    if DEBUG:
+        log_message(
+            f"Book {book['id']} sending pages {start_page}-{end_page} "
+            f"words {word_start}-{word_end} ({percent}%)"
+        )
     subject, plain, html = build_email(
         book,
         day=end_page,
@@ -117,6 +148,8 @@ def process_book(book, force=False):
             break
         except Exception as exc:
             last_error = exc
+            if DEBUG:
+                log_message(f"Book {book['id']} send attempt failed: {exc}")
             time_module.sleep(300)
 
     if not success:
@@ -134,9 +167,15 @@ def process_book(book, force=False):
 
 def process_books():
     books = get_active_books()
+    if DEBUG:
+        log_message(f"Processing {len(books)} active book(s).")
     for book in books:
         process_book(book)
 
 
 if __name__ == "__main__":
+    if DEBUG:
+        log_message("Scheduler run started.")
     process_books()
+    if DEBUG:
+        log_message("Scheduler run finished.")

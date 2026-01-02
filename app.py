@@ -61,6 +61,7 @@ def create_app():
                 f"{base_name}-{counter}.{file_ext}",
             )
             counter += 1
+        file_path = os.path.abspath(file_path)
         upload_file.save(file_path)
 
         try:
@@ -236,7 +237,7 @@ def create_app():
             flash("Book not found.", "error")
             return redirect(url_for("index"))
 
-        ok, message = process_book(book)
+        ok, message = process_book(book, force=True)
         flash(message, "success" if ok else "error")
         return redirect(url_for("book_detail", book_id=book_id))
 
