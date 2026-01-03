@@ -147,17 +147,6 @@ def create_app():
         flash("Email address updated.", "success")
         return redirect(url_for("settings"))
 
-    @app.route("/settings/time", methods=["POST"])
-    def settings_time():
-        value = request.form.get("send_time", "").strip()
-        if not value:
-            flash("Send time cannot be empty.", "error")
-            return redirect(url_for("settings"))
-
-        set_setting("send_time", value)
-        flash("Send time updated.", "success")
-        return redirect(url_for("settings"))
-
     @app.route("/settings/test", methods=["POST"])
     def settings_test_email():
         settings_data = get_settings()

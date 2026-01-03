@@ -1,0 +1,150 @@
+﻿DailyLit Redux - Remaining Work Specification
+
+Purpose
+This document captures remaining implementation and polish work relative to the original specification and current build state.
+
+Scope
+Applies to the local Windows-hosted Flask app, SQLite database, and Task Scheduler-driven daily email delivery.
+
+1) Scheduler timing and configuration
+1.1 Use stored send_time
+- Current: send_time stored in settings but not used in code; Task Scheduler controls the timing.
+- Requirement: The system should honor send_time from settings if using an internal scheduler.
+- Options:
+  - Option A (Task Scheduler only): keep Task Scheduler as source of truth; update README to clarify that changing send_time only updates display.
+  - Option B (In-app scheduler): add a background scheduler (schedule/APScheduler) that reads settings.send_time and triggers send.
+- Acceptance: If Option B, daily sends occur at the stored time without Task Scheduler. If Option A, docs explicitly state how to update Task Scheduler when send_time changes.
+
+1.2 Timezone handling
+- Requirement: Use system local timezone for send time.
+- If internal scheduler is added, it must schedule in local time.
+
+2) Email formatting improvements
+2.1 Reading time estimate
+- Add estimated reading time to email based on words (e.g., 200 wpm).
+- Update email subject/body to include estimated minutes.
+
+2.2 HTML template
+- Replace inline HTML building with a Jinja2 email template.
+- Must include:
+  - Book title, author
+  - Progress (page X of Y + %)
+  - Daily chunk content
+  - Reading time
+  - Tomorrow’s page
+
+2.3 Plain text template
+- Ensure plaintext version mirrors HTML content.
+
+3) Text processing and chunking edge cases
+3.1 Abbreviations list expansion
+- Expand common abbreviations and suffixes (e.g., “e.g.”, “i.e.”, “U.S.”, “No.”).
+
+3.2 Sentence splitting robustness
+- Handle:
+  - Sentences that start with lowercase letters
+  - Quotes and parentheses around sentence boundaries
+  - Ellipses and em dashes
+
+3.3 Chapter boundary mode (optional)
+- Add optional chunking mode to prefer chapter boundaries when page size is near threshold.
+
+4) PDF extraction robustness
+4.1 Error handling
+- Improve logging and user feedback for PDFs with no extractable text (e.g., scanned PDFs).
+
+4.2 Optional OCR support (future)
+- If desired, define integration with Tesseract or an external OCR tool; keep this out of MVP by default.
+
+5) Dashboard and book views polish
+5.1 Progress bar and stats
+- Already present; consider adding:
+  - Estimated days remaining
+  - Last sent date (already in detail view)
+
+5.2 Actions on dashboard
+- Already present for pause/resume. Consider add “Send now” and “Delete” shortcuts with confirmation.
+
+6) Data and settings management
+6.1 Settings persistence completeness
+- Ensure email address changes affect:
+  - Test email
+  - Scheduler recipient
+- (Done) but validate in scheduler if future refactors.
+
+6.2 Reset/complete behavior
+- Confirm “Mark complete” also sets completed_date in progress table (currently only sets status).
+- Option: set completed_date to today when marking complete.
+
+7) Security and reliability
+7.1 Credentials
+- Ensure .env is loaded (done).
+- Optionally add validation to warn if GMAIL_APP_PASSWORD is missing at startup.
+
+7.2 Logging
+- Log to `logs/email_log.txt` (done) but add error levels and timestamps.
+- Consider rotating logs or size limits.
+
+8) Testing
+8.1 Expand unit tests
+- Sentence splitting with quotes/ellipses
+- PDF extraction handling when text is empty
+- Email formatting template snapshot
+
+8.2 Integration tests
+- Verify “Send now” respects daily limit
+- Verify reset progress clears history
+- Verify marking complete sets completed_date
+
+9) Documentation
+9.1 Task Scheduler instructions
+- Add guidance for updating the schedule when settings.send_time changes.
+- Include example with full Python path and working directory.
+
+9.2 Gmail App Password setup
+- Add steps or link to Google instructions in README.
+
+10) Optional enhancements (post-MVP)
+- Multiple recipients per book
+- EPUB/MOBI support
+- Weekly summary email
+- Web-based reading view
+- Auth if multi-user use case
+
+Acceptance checklist (future release)
+- Daily email sends at configured time (Task Scheduler or internal scheduler)
+- Email includes reading time and well-formatted HTML/plain text
+- Chunking handles common edge cases without mid-sentence splits
+- Mark complete sets completed_date and status
+- Tests cover chunking, email templates, and send/reset flows
+- Docs reflect actual scheduling behavior and Gmail setup
+
+---
+Remaining items update (as of 2026-01-03)
+
+1) Scheduler timing and configuration
+- send_time is no longer editable in the UI; scheduling remains controlled by Windows Task Scheduler.
+- If in-app scheduling is desired, add APScheduler/schedule and wire settings to it.
+- Timezone handling for in-app scheduling remains unimplemented.
+
+2) Text processing and chunking edge cases
+- Abbreviations list expansion still pending (e.g., e.g., i.e., U.S., No.).
+- Sentence splitting still needs improved handling for ellipses, em dashes, and nested quotes/parentheses.
+- Optional chapter-boundary mode not implemented.
+
+3) PDF extraction robustness
+- Basic empty-text detection added; OCR support is still out of scope and unimplemented.
+
+4) Security and reliability
+- Startup validation for missing GMAIL_APP_PASSWORD not implemented.
+- Log rotation/size limits not implemented.
+
+5) Testing
+- No tests for reset-progress clearing history.
+- No tests for daily-limit behavior (currently “Send now” always forces).
+
+6) Documentation
+- Task Scheduler docs do not address updating schedule after changes (send_time UI removed).
+
+7) Optional enhancements (post-MVP)
+- Multiple recipients, EPUB/MOBI, weekly summary, web reader, auth remain unimplemented.

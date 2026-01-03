@@ -1,0 +1,65 @@
+﻿DailyLit Redux initial build summary
+
+1) Project scaffold
+- Created base structure: app.py, scheduler.py, config.py, requirements.txt, templates/, static/, data/, logs/.
+- Added .gitignore and initial placeholders.
+
+2) Configuration and environment
+- Implemented Config defaults (DB path, upload folder, SMTP, words per page, send time, defaults).
+- Added SECRET_KEY and .env loading (python-dotenv).
+- Added .env.example and README with setup and Task Scheduler guidance.
+
+3) Database schema and migrations
+- Implemented SQLite schema with tables: books, reading_progress, reading_history, settings.
+- Added indexes and constraints.
+- Added schema migration helper (migrations.py) and wired init_db() to run migrations.
+- Added DB helper functions for inserts, queries, updates, history, settings.
+
+4) Core Flask app
+- Added routes: /, /upload (GET/POST), /settings (GET), settings actions, /book/<id>, book actions.
+- Upload flow saves files, parses text, counts words, calculates pages, inserts DB rows.
+- Added filename collision handling and file cleanup on delete.
+- Added empty-text handling for PDFs and text files.
+
+5) UI/Templates
+- Built base layout and pages: dashboard, upload, settings, book detail.
+- Added progress bar, status, actions, and history table.
+- Added styling in static/style.css.
+- Added flash messaging for action feedback.
+
+6) Text processing
+- Implemented sentence-aware chunking with abbreviation protection.
+- Added word counting, chunk ranges, and PDF extraction via PyPDF2.
+
+7) Scheduler/email sender
+- Implemented scheduler.py with daily send flow, retries, logging, and progress updates.
+- Added shared process_book() for manual “Send now”.
+- Email send uses Gmail SMTP and recipient from settings.
+
+8) Book actions
+- Implemented pause/resume, delete, change pages/day, send now, reset progress, mark complete.
+- Settings updates for default pages/day, email address, and send time.
+
+9) Tests
+- Added unit tests for text processing and email formatting.
+- Added integration test for upload → send → update.
+- Ran pytest (all tests passing; PyPDF2 deprecation warning remains).
+
+10) Git and publishing
+- Initialized repo, added GitHub remote, committed and pushed all changes to main.
+
+---
+Update as of 2026-01-03
+
+Completed since initial build summary
+- Added debug logging instrumentation to scheduler (DAILYLIT_DEBUG=1) and absolute log path.
+- Added “Send now” behavior to force immediate next pages; removed separate force button.
+- Added reset progress and mark complete actions; mark complete now sets completed_date.
+- Added settings editing for default pages/day, email address; removed send time UI (not wired).
+- Added dashboard progress bar percent and estimated days remaining, plus Send now/Delete shortcuts.
+- Added email templates (HTML and plain text) with reading-time estimate and templating via Jinja2.
+- Added PDF empty-text handling with user-friendly error.
+- Added schema migration helper and versioning.
+- Added README and .env.example; documented Gmail App Password setup.
+- Expanded test coverage: edge-case sentence splitting, completed_date behavior, and end-to-end send flow.
+- Updated default WORDS_PER_PAGE to 400.
