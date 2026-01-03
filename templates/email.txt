@@ -1,0 +1,8 @@
+Book: {{ title }}
+Author: {{ author }}
+Progress: Page {{ end_page }} of {{ total_pages }} ({{ percent }}%)
+
+{{ content }}
+
+Reading Time: ~{{ reading_time_minutes }} minute{{ 's' if reading_time_minutes != 1 else '' }}
+Tomorrow: Page {{ tomorrow_page }}

@@ -4,14 +4,22 @@ from datetime import date, datetime
 from email.message import EmailMessage
 import smtplib
 
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from markupsafe import Markup
+
 from config import Config
 from db import get_active_books, get_settings, insert_history, set_book_status, update_progress
-from text_processing import chunk_text_with_word_ranges, extract_text
+from text_processing import chunk_text_with_word_ranges, count_words, extract_text
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_PATH = os.path.join(BASE_DIR, "logs", "email_log.txt")
 DEBUG = os.getenv("DAILYLIT_DEBUG", "0").strip() == "1"
+
+_TEMPLATE_ENV = Environment(
+    loader=FileSystemLoader(os.path.join(BASE_DIR, "templates")),
+    autoescape=select_autoescape(["html"]),
+)
 
 
 def log_message(message):
@@ -23,26 +31,23 @@ def log_message(message):
 
 def build_email(book, day, total_pages, content, start_page, end_page, percent):
     subject = f"[DailyLit] {book['title']} - Day {day} of ~{total_pages}"
-    plain = (
-        f"Book: {book['title']}\n"
-        f"Author: {book['author'] or 'Unknown'}\n"
-        f"Progress: Page {end_page} of {total_pages} ({percent}%)\n\n"
-        f"{content}\n\n"
-        f"Tomorrow: Page {end_page + 1 if end_page < total_pages else end_page}\n"
-    )
-    html = f"""
-    <html>
-      <body>
-        <p><strong>Book:</strong> {book['title']}<br/>
-        <strong>Author:</strong> {book['author'] or 'Unknown'}<br/>
-        <strong>Progress:</strong> Page {end_page} of {total_pages} ({percent}%)</p>
-        <hr/>
-        <p>{content.replace('\n', '<br/>')}</p>
-        <hr/>
-        <p>Tomorrow: Page {end_page + 1 if end_page < total_pages else end_page}</p>
-      </body>
-    </html>
-    """.strip()
+    tomorrow_page = end_page + 1 if end_page < total_pages else end_page
+    reading_time_minutes = max(1, round(count_words(content) / 200))
+
+    context = {
+        "title": book["title"],
+        "author": book["author"] or "Unknown",
+        "total_pages": total_pages,
+        "end_page": end_page,
+        "percent": percent,
+        "content": content,
+        "content_html": Markup(content.replace("\n", "<br />")),
+        "reading_time_minutes": reading_time_minutes,
+        "tomorrow_page": tomorrow_page,
+    }
+
+    plain = _TEMPLATE_ENV.get_template("email.txt").render(context)
+    html = _TEMPLATE_ENV.get_template("email.html").render(context)
     return subject, plain, html
 
 

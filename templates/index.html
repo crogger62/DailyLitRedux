@@ -21,26 +21,39 @@
               </div>
               <p class="muted">Progress: {{ book.current_page }} / {{ book.total_pages }} ({{ percent|round(0) }}%)</p>
             </div>
-            <div class="book-meta">
-              <p>Status: {{ book.status }}</p>
-              <p>Pages/day: {{ book.pages_per_day }}</p>
-              <div class="book-actions">
-                {% if book.status == 'active' %}
-                  <form method="post" action="{{ url_for('book_status', book_id=book.id) }}">
-                    <input type="hidden" name="status" value="paused" />
-                    <button type="submit">Pause</button>
-                  </form>
-                {% elif book.status == 'paused' %}
-                  <form method="post" action="{{ url_for('book_status', book_id=book.id) }}">
-                    <input type="hidden" name="status" value="active" />
-                    <button type="submit">Resume</button>
-                  </form>
+              <div class="book-meta">
+                <p>Status: {{ book.status }}</p>
+                <p>Pages/day: {{ book.pages_per_day }}</p>
+                {% if book.status == 'completed' %}
+                  <p>Days remaining: 0</p>
                 {% else %}
-                  <span class="muted">Completed</span>
+                  {% set remaining_pages = (book.total_pages - book.current_page) if book.total_pages else 0 %}
+                  {% set days_remaining = (remaining_pages / book.pages_per_day) | round(0, 'ceil') %}
+                  <p>Days remaining: {{ days_remaining }}</p>
                 {% endif %}
+                <div class="book-actions">
+                  {% if book.status == 'active' %}
+                    <form method="post" action="{{ url_for('book_status', book_id=book.id) }}">
+                      <input type="hidden" name="status" value="paused" />
+                      <button type="submit">Pause</button>
+                    </form>
+                  {% elif book.status == 'paused' %}
+                    <form method="post" action="{{ url_for('book_status', book_id=book.id) }}">
+                      <input type="hidden" name="status" value="active" />
+                      <button type="submit">Resume</button>
+                    </form>
+                  {% else %}
+                    <span class="muted">Completed</span>
+                  {% endif %}
+                  <form method="post" action="{{ url_for('book_send_now', book_id=book.id) }}">
+                    <button type="submit">Send now</button>
+                  </form>
+                  <form method="post" action="{{ url_for('book_delete', book_id=book.id) }}">
+                    <button type="submit" class="danger">Delete</button>
+                  </form>
+                </div>
+                <a href="{{ url_for('book_detail', book_id=book.id) }}">View</a>
               </div>
-              <a href="{{ url_for('book_detail', book_id=book.id) }}">View</a>
-            </div>
           </div>
         {% endfor %}
       </div>

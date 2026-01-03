@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>DailyLit</title>
+  </head>
+  <body>
+    <p><strong>Book:</strong> {{ title }}<br />
+    <strong>Author:</strong> {{ author }}<br />
+    <strong>Progress:</strong> Page {{ end_page }} of {{ total_pages }} ({{ percent }}%)</p>
+    <hr />
+    <p>{{ content_html }}</p>
+    <hr />
+    <p>Reading Time: ~{{ reading_time_minutes }} minute{{ 's' if reading_time_minutes != 1 else '' }}</p>
+    <p>Tomorrow: Page {{ tomorrow_page }}</p>
+  </body>
+</html>
